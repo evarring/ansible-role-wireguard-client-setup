@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for wireguard_client_setup
+
+- name: Install required packages
+  ansible.builtin.dnf:
+    name:
+      - NetworkManager
+      - wireguard-tools
+    state: present
+
+- name: Ensure NetworkManager is running
+  ansible.builtin.systemd:
+    name: NetworkManager
+    state: started
+    enabled: true
+
+- name: Check if nmconnection already exists exists
+  ansible.builtin.stat:
+    path: "/etc/NetworkManager/system-connections/{{ setup_wireguard_client_connection_name }}.nmconnection"
+  register: wireguard_file
+
+- name: Set variable based on file existence
+  ansible.builtin.set_fact:
+    setup_wireguard_check: "{{ wireguard_file.stat.exists }}"
+
+- name: When the connection does not exist, run template and import
+  when: setup_wireguard_check is false
+  block:
+    - name: Copy the wireguard connection template file
+      ansible.builtin.template:
+        src: "wireguardprofile.conf.j2"
+        dest: "/home/{{ ansible_user }}/{{ setup_wireguard_client_connection_name }}.conf"
+        mode: '0600'
+
+    - name: Reload connections
+      ansible.builtin.command: nmcli connection reload
+
+    - name: Import wireguard profile
+      ansible.builtin.command: "nmcli connection import type wireguard file {{ setup_wireguard_client_connection_name }}.conf"
+      args:
+        chdir: "/home/{{ ansible_user }}"
+        creates: "/etc/NetworkManager/system-connections/{{ setup_wireguard_client_connection_name }}.nmconnection"
+
+    - name: Reload connections
+      ansible.builtin.command: nmcli connection reload
+
+    - name: Cleanup wireguard template file
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/{{ setup_wireguard_client_connection_name }}.conf"
+        state: absent
+
+#    - name: Bring up the WireGuard connection
+#      community.general.nmcli:
+#        conn_name: "{{ setup_wireguard_client_connection_name }}"
+#        state: up
+...

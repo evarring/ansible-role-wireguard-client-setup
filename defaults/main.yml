@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT-0
+---
+# defaults file for wireguard_client_setup
+
+setup_wireguard_client_connection_name: "connectionname"
+setup_wireguard_client_endpoint: "vpn.domain.com:51800"
+setup_wireguard_client_allowedips: "10.1.1.1/29,10.2.2.1/30"
+setup_wireguard_client_persistentkeepalive: "25"
+setup_wireguard_client_dns: "10.1.2.1"
+setup_wireguard_client_address: "10.1.2.23/32"
+setup_wireguard_client_privatekey: "testtesttesttesttesttesttesttesttest"
+setup_wireguard_client_publickey: "testtesttesttesttesttesttesttesttesttest"
+setup_wireguard_client_presharedkey: "testtesttesttesttesttesttesttesttesttest"
